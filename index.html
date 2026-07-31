@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>龙虾进展 · Weekly W31</title>
+<style id="cockpit-style">
+  /* ---------- 主题令牌（自包含，浅色默认 / 深色跟随系统） ---------- */
+  :root {
+    --kimi-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+    --kimi-font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --kimi-color-text-primary: #1b1b1f;
+    --kimi-color-text-secondary: #55555c;
+    --kimi-color-text-tertiary: #8a8a92;
+    --kimi-color-text-quaternary: #b6b6be;
+    --kimi-color-surface: #ffffff;
+    --kimi-color-surface-muted: #f5f5f7;
+    --kimi-color-surface-raised: #ffffff;
+    --kimi-color-surface-strong: #efeff2;
+    --kimi-color-border: rgba(0, 0, 0, 0.10);
+    --kimi-color-accent: #3b5bfd;
+    --kimi-color-on-accent: #ffffff;
+    --kimi-color-positive: #17954e;
+    --kimi-color-warning: #d9880f;
+    --kimi-color-danger: #d5304e;
+    --kimi-glass-surface: rgba(255, 255, 255, 0.4);
+    --kimi-glass-border: rgba(255, 255, 255, 0.3);
+    --kimi-glass-highlight: rgba(255, 255, 255, 0.8);
+    --kimi-glass-lowlight: rgba(255, 255, 255, 0.1);
+    --kimi-glass-shadow: rgba(0, 0, 0, 0.1);
+    --kimi-glass-blur: 5px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --kimi-color-text-primary: #f0f0f3;
+      --kimi-color-text-secondary: #b3b3ba;
+      --kimi-color-text-tertiary: #85858d;
+      --kimi-color-text-quaternary: #5d5d65;
+      --kimi-color-surface: #17171a;
+      --kimi-color-surface-muted: #101013;
+      --kimi-color-surface-raised: #1d1d21;
+      --kimi-color-surface-strong: #28282d;
+      --kimi-color-border: rgba(255, 255, 255, 0.12);
+      --kimi-color-accent: #6b84ff;
+      --kimi-color-positive: #3fb96f;
+      --kimi-color-warning: #e2a23d;
+      --kimi-color-danger: #e25a70;
+      --kimi-glass-surface: rgba(32, 32, 37, 0.55);
+      --kimi-glass-border: rgba(255, 255, 255, 0.14);
+      --kimi-glass-highlight: rgba(255, 255, 255, 0.16);
+      --kimi-glass-lowlight: rgba(255, 255, 255, 0.04);
+      --kimi-glass-shadow: rgba(0, 0, 0, 0.4);
+      color-scheme: dark;
+    }
+  }
+
+  /* ---------- Construction Grid ---------- */
+  .kimi-construction-grid {
+    --kimi-grid-cell: 48px;
+    --kimi-grid-vertical-strength: 4%;
+    --kimi-grid-horizontal-strength: 2%;
+    background-image:
+      linear-gradient(to right,
+        color-mix(in srgb, var(--kimi-color-text-primary) var(--kimi-grid-vertical-strength), transparent) 1px,
+        transparent 1px),
+      linear-gradient(to bottom,
+        color-mix(in srgb, var(--kimi-color-text-primary) var(--kimi-grid-horizontal-strength), transparent) 1px,
+        transparent 1px);
+    background-position: var(--kimi-grid-origin-x, 0) var(--kimi-grid-origin-y, 0);
+    background-size: var(--kimi-grid-cell) var(--kimi-grid-cell);
+  }
+  @media (min-width: 900px) {
+    .kimi-construction-grid {
+      --kimi-grid-cell: 56px;
+      --kimi-grid-vertical-strength: 5%;
+      --kimi-grid-horizontal-strength: 2.5%;
+    }
+  }
+  @media (prefers-color-scheme: dark) {
+    .kimi-construction-grid {
+      --kimi-grid-vertical-strength: 5%;
+      --kimi-grid-horizontal-strength: 2.5%;
+    }
+  }
+
+  /* ---------- Pixel 场域层 ---------- */
+  .kimi-pixel-stage { position: relative; isolation: isolate; overflow: hidden; }
+  .kimi-pixel-background {
+    position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+  }
+  .kimi-pixel-background > canvas,
+  .kimi-pixel-background > img {
+    position: absolute; inset: 0; display: block; width: 100%; height: 100%; pointer-events: none;
+  }
+  .kimi-pixel-content { position: relative; z-index: 1; }
+  .kimi-pixel-label-safe { position: relative; z-index: 2; }
+
+  /* ---------- Glass 面板 ---------- */
+  .kimi-glass-panel {
+    box-sizing: border-box;
+    border: 1px solid var(--kimi-color-border);
+    border-radius: 8px;
+    background: var(--kimi-color-surface-raised);
+    color: var(--kimi-color-text-primary);
+    position: relative; isolation: isolate; overflow: hidden;
+  }
+  .kimi-glass-panel::before {
+    position: absolute; inset-block-start: 0; inset-inline: 0; z-index: 2; block-size: 1px; content: '';
+    background: linear-gradient(90deg, transparent, var(--kimi-glass-highlight), transparent);
+    pointer-events: none;
+  }
+  .kimi-glass-panel::after {
+    position: absolute; inset-block: 0; inset-inline-start: 0; z-index: 2; inline-size: 1px; content: '';
+    background: linear-gradient(180deg, var(--kimi-glass-highlight), transparent, var(--kimi-glass-lowlight));
+    pointer-events: none;
+  }
+  @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .kimi-glass-panel {
+      border-color: var(--kimi-glass-border);
+      background: var(--kimi-glass-surface);
+      box-shadow:
+        0 8px 32px var(--kimi-glass-shadow),
+        inset 0 1px 0 var(--kimi-glass-highlight),
+        inset 0 -1px 0 var(--kimi-glass-lowlight);
+      backdrop-filter: blur(var(--kimi-glass-blur));
+      -webkit-backdrop-filter: blur(var(--kimi-glass-blur));
+    }
+  }
+
+  /* ---------- 页面骨架 ---------- */
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--kimi-font-sans);
+    color: var(--kimi-color-text-primary);
+    background: var(--kimi-color-surface-muted);
+  }
+  .technical, code { font-family: var(--kimi-font-mono); }
+
+  .toolbar {
+    max-width: 1152px; margin: 0 auto; padding: 14px 24px 0;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .toolbar .doc-name { font-size: 13px; color: var(--kimi-color-text-tertiary); }
+  .toolbar .spacer { flex: 1; }
+  .export-btn {
+    appearance: none; font: inherit; font-size: 13px; cursor: pointer;
+    min-height: 30px; padding: 5px 14px; border-radius: 8px;
+    border: 1px solid var(--kimi-color-border);
+    background: var(--kimi-color-surface-raised);
+    color: var(--kimi-color-text-primary);
+    transition: background-color 140ms ease, border-color 140ms ease, opacity 140ms ease;
+  }
+  .export-btn:hover { border-color: var(--kimi-color-accent); background: var(--kimi-color-surface-strong); }
+  .export-btn:focus-visible { outline: 2px solid var(--kimi-color-accent); outline-offset: 2px; }
+  .export-btn:disabled { cursor: not-allowed; opacity: 0.46; }
+
+  .cockpit {
+    max-width: 1092px; margin: 8px auto 32px; padding: 16px 20px 20px;
+    --kimi-grid-origin-x: 20px;
+    --kimi-grid-origin-y: 16px;
+    background-color: var(--kimi-color-surface);
+  }
+
+  /* header */
+  .head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; min-block-size: 40px; }
+  .head h1 { margin: 0; font-size: 16px; font-weight: 500; }
+  .head .week {
+    font-family: var(--kimi-font-mono); font-size: 11px;
+    color: var(--kimi-color-accent);
+    border: 1px solid color-mix(in srgb, var(--kimi-color-accent) 40%, transparent);
+    border-radius: 4px; padding: 1px 6px;
+  }
+  .head .meta { font-family: var(--kimi-font-mono); font-size: 11px; color: var(--kimi-color-text-tertiary); }
+  .head .draft {
+    font-size: 11px; color: var(--kimi-color-text-tertiary);
+    border: 1px solid var(--kimi-color-border); border-radius: 4px; padding: 1px 6px;
+  }
+
+  /* hero: pixel stage + P0 glass panel */
+  .hero { margin-block-start: 4px; border-radius: 8px; }
+  .hero .kimi-pixel-content { padding: 10px 0 14px; }
+  .panel { padding: 14px 16px 13px; }
+  .p0-label {
+    margin: 0; font-family: var(--kimi-font-mono); font-size: 11px;
+    color: var(--kimi-color-text-tertiary);
+  }
+  .p0-verdict { margin: 4px 0 2px; font-size: 17px; font-weight: 500; line-height: 1.35; }
+  .p0-sub { margin: 0 0 12px; font-size: 12.5px; color: var(--kimi-color-text-secondary); }
+
+  .spectrum { display: flex; gap: 3px; block-size: 22px; margin-block-end: 8px; }
+  .spectrum > i { flex: 1 1 0; border-radius: 2px; }
+  .seg-ok       { background: var(--kimi-color-positive); }
+  .seg-progress { background: color-mix(in srgb, var(--kimi-color-text-primary) 34%, transparent); }
+  .seg-pending  { background: var(--kimi-color-warning); }
+  .seg-risk     { background: var(--kimi-color-danger); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0; padding: 0; list-style: none; }
+  .legend li { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--kimi-color-text-secondary); }
+  .legend b { font-weight: 500; color: var(--kimi-color-text-primary); font-variant-numeric: tabular-nums; }
+  .dot { inline-size: 8px; block-size: 8px; border-radius: 50%; flex: none; }
+  .dot-ok { background: var(--kimi-color-positive); }
+  .dot-progress { background: color-mix(in srgb, var(--kimi-color-text-primary) 34%, transparent); }
+  .dot-pending { background: var(--kimi-color-warning); }
+  .dot-risk { background: var(--kimi-color-danger); }
+
+  /* sections */
+  .zone { margin-block-start: 18px; }
+  .zone h2 {
+    margin: 0 0 6px; font-size: 12px; font-weight: 500;
+    color: var(--kimi-color-text-tertiary);
+  }
+  .zone h2 .n { font-family: var(--kimi-font-mono); font-weight: 400; }
+
+  .keydate {
+    margin: 10px 0 0; padding: 7px 10px; font-size: 12.5px;
+    color: var(--kimi-color-text-secondary);
+    border-inline-start: 2px solid var(--kimi-color-accent);
+  }
+  .keydate b { color: var(--kimi-color-text-primary); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+  .cap-rows { margin: 0; padding: 0; list-style: none; }
+  .cap-rows li {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 2px; font-size: 13px;
+    border-block-end: 1px solid color-mix(in srgb, var(--kimi-color-border) 55%, transparent);
+  }
+  .cap-rows li:last-child { border-block-end: none; }
+  .cap-rows .name { font-weight: 500; flex: none; }
+  .cap-rows .change { font-size: 12px; color: var(--kimi-color-text-tertiary); margin-inline-start: auto; text-align: end; }
+
+  .chip { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; flex: none; }
+  .chip .dot { inline-size: 7px; block-size: 7px; }
+  .st-ok { color: var(--kimi-color-positive); }
+  .st-risk { color: var(--kimi-color-danger); }
+  .st-pending { color: var(--kimi-color-warning); }
+  .st-neutral { color: var(--kimi-color-text-tertiary); }
+  .st-ok .dot { background: var(--kimi-color-positive); }
+  .st-risk .dot { background: var(--kimi-color-danger); }
+  .st-pending .dot { background: var(--kimi-color-warning); }
+  .st-neutral .dot { background: var(--kimi-color-text-quaternary); }
+
+  .cap-chips { display: grid; grid-template-columns: 1fr; gap: 2px 16px; margin: 0; padding: 0; list-style: none; }
+  .cap-chips li { display: flex; align-items: center; gap: 8px; padding: 5px 2px; font-size: 12.5px; }
+  .cap-chips .chip { margin-inline-start: auto; }
+
+  .cap-mini { margin: 0; padding: 0; list-style: none; font-size: 12px; color: var(--kimi-color-text-secondary); }
+  .cap-mini li { display: flex; gap: 8px; padding: 3px 0; align-items: baseline; }
+  .cap-mini .g { flex: none; font-weight: 500; color: var(--kimi-color-text-primary); }
+
+  .blocks { display: grid; grid-template-columns: 1fr; gap: 4px 14px; margin: 0; padding: 0; list-style: none; }
+  .blocks li {
+    padding: 7px 2px 7px 10px; font-size: 12.5px;
+    border-inline-start: 2px solid var(--kimi-color-border);
+  }
+  .blocks li.b-risk { border-inline-start-color: var(--kimi-color-danger); }
+  .blocks li.b-pending { border-inline-start-color: var(--kimi-color-warning); }
+  .blocks .t { display: flex; align-items: center; gap: 8px; font-weight: 500; color: var(--kimi-color-text-primary); }
+  .blocks .t .chip { font-weight: 400; }
+  .blocks .n { margin-block-start: 2px; font-size: 12px; color: var(--kimi-color-text-tertiary); }
+
+  .risk-mini { margin: 0; padding: 0; list-style: none; font-size: 12.5px; color: var(--kimi-color-text-secondary); }
+  .risk-mini li { display: flex; gap: 8px; padding: 5px 0; align-items: baseline; }
+  .risk-mini .g { flex: none; font-weight: 500; color: var(--kimi-color-text-primary); }
+
+  .foot {
+    margin-block-start: 16px; padding-block-start: 8px;
+    border-block-start: 1px solid color-mix(in srgb, var(--kimi-color-border) 55%, transparent);
+    font-family: var(--kimi-font-mono); font-size: 11px; color: var(--kimi-color-text-quaternary);
+  }
+
+  /* ---------- 响应式分档 ---------- */
+  .cap-rows, .cap-mini, .blocks, .foot { display: none; }
+  .cockpit-grid { display: block; }
+  .cap-chips { display: grid; }
+  .keydate { display: block; }
+  .risk-mini-wrap { display: none; margin-block-start: 14px; }
+  .risk-mini-wrap h2 { margin: 0 0 2px; font-size: 12px; font-weight: 500; color: var(--kimi-color-text-tertiary); }
+  .risk-mini-wrap h2 .n { font-family: var(--kimi-font-mono); font-weight: 400; }
+
+  @media (min-height: 420px) and (max-height: 779px) {
+    .risk-mini-wrap { display: block; }
+  }
+  @media (min-height: 780px) and (max-width: 899px) {
+    .risk-mini-wrap { display: block; }
+  }
+  @media (max-height: 419px) {
+    .cockpit { padding-block: 12px 14px; }
+    .panel { padding: 10px 12px; }
+    .p0-sub { display: none; }
+    .cap-chips, .keydate, .risk-mini-wrap { display: none; }
+    .cap-mini { display: block; }
+    .zone { margin-block-start: 10px; }
+  }
+  @media (min-width: 900px) and (min-height: 780px) {
+    .cap-chips, .cap-mini, .risk-mini-wrap { display: none; }
+    .cockpit-grid { display: grid; grid-template-columns: 1.05fr 1fr 1fr; gap: 0 28px; margin-block-start: 18px; }
+    .cockpit-grid .zone { margin-block-start: 0; }
+    .cap-rows { display: block; }
+    .blocks { display: grid; }
+    .foot { display: block; }
+  }
+  @media (min-width: 560px) {
+    .cap-chips { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ---------- 导出模式：固定完整三栏布局，与窗口尺寸无关 ---------- */
+  .export-root { width: 1092px; max-width: none; margin: 0; }
+  .export-root .cockpit-grid { display: grid !important; grid-template-columns: 1.05fr 1fr 1fr !important; gap: 0 28px !important; margin-block-start: 18px !important; }
+  .export-root .cockpit-grid .zone { margin-block-start: 0 !important; }
+  .export-root .cap-rows { display: block !important; }
+  .export-root .blocks { display: grid !important; }
+  .export-root .foot { display: block !important; }
+  .export-root .keydate { display: block !important; }
+  .export-root .cap-chips, .export-root .cap-mini, .export-root .risk-mini-wrap { display: none !important; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <span class="doc-name">龙虾 AI Weekly · 能力演进一页报（W31）</span>
+  <span class="spacer"></span>
+  <button class="export-btn" id="exportBtn" type="button" aria-label="导出驾驶舱为 PNG 图片">导出图片</button>
+</div>
+
+<main class="cockpit kimi-construction-grid" id="cockpit" data-kimi-root>
+
+  <section class="hero kimi-pixel-stage" data-kimi-pixel-stage>
+    <div class="kimi-pixel-background" data-kimi-pixel-background aria-hidden="true"></div>
+    <div class="kimi-pixel-content">
+
+      <header class="head">
+        <h1>龙虾进展</h1>
+        <span class="week">W31</span>
+        <span class="meta">2026-07-24 → 07-30 · 运营</span>
+        <span class="draft">draft</span>
+      </header>
+
+      <div class="panel kimi-glass-panel kimi-pixel-label-safe" role="group" aria-label="本周总体状态：知识库能力建设与采购业务闭环并行推进期，10 项能力中 2 项已可用、6 项推进中、1 项待确认、1 项风险中">
+        <p class="p0-label">阶段判定 · 2026-W31</p>
+        <p class="p0-verdict">「知识库能力建设 × 采购业务闭环」并行推进期</p>
+        <p class="p0-sub">本周交付采购功能 3 项、能力演进 9 项；短期瓶颈在接口契约、商品主数据与字段补齐。</p>
+
+        <div class="spectrum" role="img" aria-label="能力状态频谱：已可用 2 项，推进中 6 项，待确认 1 项，风险中 1 项">
+          <i class="seg-ok" title="阈值设定 / 库存不足 · 已可用"></i>
+          <i class="seg-ok" title="生产转换对照管理 · 已可用"></i>
+          <i class="seg-progress" title="搜索排序规则 V1.0 · 待上线后测试"></i>
+          <i class="seg-progress" title="搜索召回验证 · 优化中"></i>
+          <i class="seg-progress" title="隔离库数据展示 · 优化中"></i>
+          <i class="seg-progress" title="知识库问答 · 验证中"></i>
+          <i class="seg-progress" title="文件搜索 / 下载 · 规划中"></i>
+          <i class="seg-progress" title="商品主数据 · 规划中"></i>
+          <i class="seg-pending" title="自动生产转换 · 待确认"></i>
+          <i class="seg-risk" title="采购断货分析 · 风险中"></i>
+        </div>
+
+        <ul class="legend">
+          <li><span class="dot dot-ok"></span>已可用 <b>2</b></li>
+          <li><span class="dot dot-progress"></span>推进中 <b>6</b></li>
+          <li><span class="dot dot-pending"></span>待确认 <b>1</b></li>
+          <li><span class="dot dot-risk"></span>风险 <b>1</b></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 驾驶舱三栏：能力地图 | 风险与问题 | 决策与行动 -->
+  <div class="cockpit-grid">
+  <!-- P1: 能力地图 -->
+  <section class="zone" aria-labelledby="cap-h">
+    <h2 id="cap-h">能力地图 <span class="n">· 10</span></h2>
+
+    <ul class="cap-rows">
+      <li><span class="name">阈值设定 / 库存不足</span><span class="chip st-ok"><span class="dot"></span>已可用</span><span class="change">接口完成，采购已测试</span></li>
+      <li><span class="name">生产转换对照管理</span><span class="chip st-ok"><span class="dot"></span>已可用</span><span class="change">大小包装自动匹配</span></li>
+      <li><span class="name">搜索排序规则 V1.0</span><span class="chip st-neutral"><span class="dot"></span>开发中</span><span class="change">Baseline、评审与分层确认</span></li>
+      <li><span class="name">搜索召回验证</span><span class="chip st-neutral"><span class="dot"></span>优化中</span><span class="change">产品资料检索补测完成</span></li>
+      <li><span class="name">隔离库数据展示</span><span class="chip st-neutral"><span class="dot"></span>优化中</span><span class="change">三大页面拟增 7 个数据列</span></li>
+      <li><span class="name">知识库问答</span><span class="chip st-neutral"><span class="dot"></span>验证中</span><span class="change">完成搜索接口测试分析</span></li>
+      <li><span class="name">文件搜索 / 下载</span><span class="chip st-neutral"><span class="dot"></span>规划中</span><span class="change">拆出文件中心与权限需求</span></li>
+      <li><span class="name">商品主数据</span><span class="chip st-neutral"><span class="dot"></span>规划中</span><span class="change">明确后续接入方向</span></li>
+      <li><span class="name">自动生产转换</span><span class="chip st-pending"><span class="dot"></span>待确认</span><span class="change">等待仓位是否可拆分结论</span></li>
+      <li><span class="name">采购断货分析</span><span class="chip st-risk"><span class="dot"></span>风险中</span><span class="change">识别失效期字段缺失</span></li>
+    </ul>
+
+    <ul class="cap-chips">
+      <li>阈值设定 / 库存不足 导出功能<span class="chip st-ok"><span class="dot"></span>已可用</span></li>
+      <li>生产转换对照管理<span class="chip st-ok"><span class="dot"></span>已可用</span></li>
+      <li>搜索排序规则 V1.0<span class="chip st-neutral"><span class="dot"></span>开发中</span></li>
+      <li>搜索召回验证<span class="chip st-neutral"><span class="dot"></span>优化中</span></li>
+      <li>隔离库数据展示<span class="chip st-neutral"><span class="dot"></span>优化中</span></li>
+      <li>知识库问答<span class="chip st-neutral"><span class="dot"></span>验证中</span></li>
+      <li>文件搜索 / 下载<span class="chip st-neutral"><span class="dot"></span>规划中</span></li>
+      <li>商品主数据<span class="chip st-neutral"><span class="dot"></span>规划中</span></li>
+      <li>自动生产转换<span class="chip st-pending"><span class="dot"></span>待确认</span></li>
+      <li>采购断货分析<span class="chip st-risk"><span class="dot"></span>风险中</span></li>
+    </ul>
+
+    <ul class="cap-mini">
+      <li><span class="g st-ok">已可用</span>阈值设定 / 库存不足、生产转换对照</li>
+      <li><span class="g st-pending">待确认</span>自动生产转换（仓位拆分）</li>
+      <li><span class="g st-risk">风险</span>采购断货分析（字段缺失）</li>
+    </ul>
+
+    <p class="keydate">关键节点 <b class="technical">2026-08-02</b> 隔离库 7 个数据列上线，采购验收。</p>
+  </section>
+
+  <!-- P2: 风险与问题 -->
+  <section class="zone" aria-labelledby="risk-h">
+      <h2 id="risk-h">风险与问题 <span class="n">· 8</span></h2>
+      <ul class="blocks">
+        <li class="b-risk"><span class="t">断货分析不可用<span class="chip st-risk"><span class="dot"></span>风险中</span></span><span class="n">缺失效期字段 → 确认字段来源并复测</span></li>
+        <li class="b-pending"><span class="t">自动生产转换方案未定<span class="chip st-pending"><span class="dot"></span>待确认</span></span><span class="n">仓位拆分结论 → 选方案 A / B</span></li>
+        <li><span class="t">搜索接口不适合正式对接<span class="chip st-neutral"><span class="dot"></span>优化中</span></span><span class="n">鉴权 / 证书 / 字段 → 与 IT 确认 P0 / P1</span></li>
+        <li><span class="t">产品「有哪些」回答不完整<span class="chip st-neutral"><span class="dot"></span>优化中</span></span><span class="n">依赖文档片段 → 接入商品主数据</span></li>
+        <li><span class="t">隔离库数据或致重复备货<span class="chip st-neutral"><span class="dot"></span>优化中</span></span><span class="n">核心页面缺展示 → 跟进 08-02 上线</span></li>
+        <li><span class="t">文件上传维护体验不足<span class="chip st-neutral"><span class="dot"></span>优化中</span></span><span class="n">批量审核 / 检索 / 格式 → 汇总需求与截图</span></li>
+        <li><span class="t">排序开发连续性风险<span class="chip st-neutral"><span class="dot"></span>进行中</span></span><span class="n">长任务易被打断 → 任务记录与状态落盘</span></li>
+        <li><span class="t">AI 任务稳定性（Billing）<span class="chip st-neutral"><span class="dot"></span>观察中</span></span><span class="n">曾影响报价 / PDF / 搜索 → 确认配置并观察</span></li>
+      </ul>
+    </section>
+
+    <!-- P2: 决策与行动 -->
+    <section class="zone" aria-labelledby="act-h">
+      <h2 id="act-h">决策与行动 <span class="n">· 6</span></h2>
+      <ul class="blocks">
+        <li><span class="t">接口鉴权与权限策略</span><span class="n">影响正式接入 → 请 IT 确认 P0 清单</span></li>
+        <li><span class="t">商品主数据字段来源</span><span class="n">影响问答完整性 → 产品 / IT 确认口径</span></li>
+        <li><span class="t">文件中心一期范围</span><span class="n">先覆盖彩页、说明书、COA、技术资料</span></li>
+        <li><span class="t">隔离库 7 个数据列上线</span><span class="n">跟进 <span class="technical">08-02</span> 上线与采购验收</span></li>
+        <li><span class="t">自动生产转换方案</span><span class="n">仓位可拆分后选择方案 A 或 B</span></li>
+        <li><span class="t">断货分析失效期字段</span><span class="n">明确来源，补齐后安排采购复测</span></li>
+      </ul>
+    </section>
+  </div>
+
+  <!-- P2: 风险与决策摘要（中帧，代替完整区块） -->
+  <section class="risk-mini-wrap" aria-labelledby="rm-h">
+    <h2 id="rm-h">风险与决策 <span class="n">· 14</span></h2>
+    <ul class="risk-mini">
+      <li><span class="g st-risk">风险</span>断货分析缺失效期字段，补齐后安排采购复测</li>
+      <li><span class="g st-pending">待确认</span>自动生产转换方案 A/B，待仓位拆分结论</li>
+      <li><span class="g">行动</span>接口鉴权 P0 清单 · 商品主数据口径 · 文件中心一期</li>
+    </ul>
+  </section>
+
+  <footer class="foot">
+    来源：采购龙虾功能跟进 / 龙虾AI知识助手 / AI知识库 / 慧搜搜索优化 / 接口测试分析报告 等 18 篇（REQ×8 · RISK×5）
+  </footer>
+
+</main>
+
+<script>
+/* ---- kimi-pixel-field.js（自包含内联） ---- */
+(function (global) {
+  'use strict';
+  function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
+  function seeded(seed) {
+    let state = (Number(seed) || 1) >>> 0;
+    return function next() { state = (state * 1664525 + 1013904223) >>> 0; return state / 4294967296; };
+  }
+  function densityAt(mode, x, y, config) {
+    if (mode === 'directional') {
+      const angle = (Number(config.flowAngleDeg) || 0) * Math.PI / 180;
+      const dx = x - 0.5, dy = y - 0.5;
+      const along = dx * Math.cos(angle) + dy * Math.sin(angle);
+      const across = -dx * Math.sin(angle) + dy * Math.cos(angle);
+      const lane = 1 - Math.abs(across) * 4.4;
+      return clamp(lane * 0.72 + (along + 0.7) * 0.2, 0, 1);
+    }
+    if (mode === 'atmosphere') { const dx = x - 0.72, dy = y - 0.42; return clamp(1 - Math.sqrt(dx * dx + dy * dy) * 2.1, 0, 1); }
+    if (mode === 'contour') { const curve = 0.5 + Math.sin(x * Math.PI * 2) * 0.16; return clamp(1 - Math.abs(y - curve) * 7, 0, 1); }
+    return clamp(0.12 + x * 0.88, 0, 1);
+  }
+  function mount(container, options) {
+    const config = Object.assign({ mode: 'density', mark: 'ascii', seed: 7, spacing: 14, opacity: 0.42, pointer: true, pointerTarget: null, pointerRadius: 96, pointerStrength: 14, pointerMode: 'repel', flowAngleDeg: 0, driftSpeed: 0, variance: 0.34, characters: '.:+*#' }, options || {});
+    const pointerTarget = config.pointerTarget && typeof config.pointerTarget.addEventListener === 'function' ? config.pointerTarget : container;
+    const canvas = (container.ownerDocument || global.document).createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (!context) return { canvas: null, render: function () {}, resize: function () {}, destroy: function () {} };
+    canvas.setAttribute('aria-hidden', 'true');
+    Object.assign(canvas.style, { position: 'absolute', inset: '0', width: '100%', height: '100%', pointerEvents: 'none', zIndex: '0' });
+    container.appendChild(canvas);
+    const media = typeof global.matchMedia === 'function' ? global.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
+    const reduced = media.matches;
+    let marks = [], pointer = null, frame = 0, visible = true, destroyed = false;
+    function dimensions() { const rect = container.getBoundingClientRect(); return { width: Math.max(1, rect.width), height: Math.max(1, rect.height) }; }
+    function rebuild() {
+      const size = dimensions();
+      const ratio = Math.min(global.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(size.width * ratio); canvas.height = Math.round(size.height * ratio);
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      const gap = Math.max(8, Number(config.spacing) || 14);
+      const variance = clamp(Number.isFinite(Number(config.variance)) ? Number(config.variance) : 0.34, 0, 0.9);
+      const random = seeded(config.seed); const next = [];
+      for (let y = gap / 2; y < size.height; y += gap) {
+        for (let x = gap / 2; x < size.width; x += gap) {
+          const nx = x / size.width, ny = y / size.height;
+          const density = densityAt(config.mode, nx, ny, config);
+          if (random() > density * 0.84) continue;
+          next.push({ x: x + (random() - 0.5) * gap * variance, y: y + (random() - 0.5) * gap * variance, density: density, jitter: random() });
+        }
+      }
+      marks = next; draw();
+    }
+    function drawMark(mark, x, y) {
+      const alpha = clamp(config.opacity * (0.34 + mark.density * 0.66), 0.04, 0.78);
+      context.globalAlpha = alpha;
+      const chars = String(config.characters || '.:+*#');
+      if (config.mark === 'ascii') {
+        context.font = Math.round(7 + mark.density * 4) + 'px ' + 'ui-monospace, Menlo, Consolas, monospace';
+        context.fillText(chars[Math.min(chars.length - 1, Math.floor(mark.density * chars.length))], x, y);
+      } else {
+        const radius = 1.25 + mark.density * 1.9;
+        context.beginPath(); context.arc(x, y, radius, 0, Math.PI * 2); context.fill();
+      }
+    }
+    function draw(timestamp) {
+      if (destroyed || !visible) return;
+      const size = dimensions();
+      context.clearRect(0, 0, size.width, size.height);
+      const color = config.color || global.getComputedStyle(container).color;
+      context.fillStyle = color; context.strokeStyle = color;
+      const flowAngle = (Number(config.flowAngleDeg) || 0) * Math.PI / 180;
+      const driftDistance = reduced ? 0 : ((Number(timestamp) || 0) / 1000) * (Number(config.driftSpeed) || 0);
+      for (const mark of marks) {
+        let x = mark.x + Math.cos(flowAngle) * driftDistance;
+        let y = mark.y + Math.sin(flowAngle) * driftDistance;
+        x = ((x % size.width) + size.width) % size.width;
+        y = ((y % size.height) + size.height) % size.height;
+        if (pointer && !reduced) {
+          const dx = x - pointer.x, dy = y - pointer.y;
+          const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+          if (distance < config.pointerRadius) {
+            const force = (1 - distance / config.pointerRadius) * config.pointerStrength;
+            const direction = config.pointerMode === 'attract' ? -1 : 1;
+            x += dx / distance * force * direction; y += dy / distance * force * direction;
+          }
+        }
+        drawMark(mark, x, y);
+      }
+      context.globalAlpha = 1;
+    }
+    function animate(timestamp) { frame = 0; draw(timestamp); if (!destroyed && visible && !reduced && Number(config.driftSpeed)) frame = global.requestAnimationFrame(animate); }
+    function requestDraw() { if (!frame) frame = global.requestAnimationFrame(animate); }
+    function onPointer(event) { if (!config.pointer || reduced) return; const rect = container.getBoundingClientRect(); pointer = { x: event.clientX - rect.left, y: event.clientY - rect.top }; requestDraw(); }
+    function onLeave() { pointer = null; if (Number(config.driftSpeed) && !reduced) requestDraw(); else draw(); }
+    const Resize = global.ResizeObserver;
+    const resizeObserver = Resize ? new Resize(rebuild) : null;
+    resizeObserver && resizeObserver.observe(container);
+    const Intersection = global.IntersectionObserver;
+    const visibilityObserver = Intersection ? new Intersection(function (entries) { visible = entries[0] ? entries[0].isIntersecting : true; if (visible) { draw(); if (Number(config.driftSpeed) && !reduced) requestDraw(); } }) : null;
+    visibilityObserver && visibilityObserver.observe(container);
+    pointerTarget.addEventListener('pointermove', onPointer, { passive: true });
+    pointerTarget.addEventListener('pointerleave', onLeave, { passive: true });
+    rebuild();
+    if (Number(config.driftSpeed) && !reduced) requestDraw();
+    return { canvas: canvas, render: draw, resize: rebuild, destroy: function () { destroyed = true; if (frame) global.cancelAnimationFrame(frame); resizeObserver && resizeObserver.disconnect(); visibilityObserver && visibilityObserver.disconnect(); pointerTarget.removeEventListener('pointermove', onPointer); pointerTarget.removeEventListener('pointerleave', onLeave); canvas.remove(); } };
+  }
+  global.KimiPixelField = { mount: mount };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* ---- 驾驶舱语义场域：能力状态分布 -> 流向 / 湍流 / 推进速度 ---- */
+(function () {
+  var MODULE_STATES = ['ok','ok','progress','progress','progress','progress','progress','progress','pending','risk'];
+  var total = MODULE_STATES.length;
+  var progress = MODULE_STATES.filter(function (s) { return s === 'progress'; }).length;
+  var tension = MODULE_STATES.filter(function (s) { return s === 'pending' || s === 'risk'; }).length;
+  var progressShare = progress / total;
+  var tensionShare = tension / total;
+
+  var stage = document.querySelector('[data-kimi-pixel-stage]');
+  var bg = stage && stage.querySelector('[data-kimi-pixel-background]');
+  if (!stage || !bg || !window.KimiPixelField) return;
+  bg.style.color = 'var(--kimi-color-text-tertiary)';
+  window.KimiPixelField.mount(bg, {
+    mode: 'directional', mark: 'ascii', characters: '.:+*#',
+    flowAngleDeg: 0,
+    driftSpeed: progressShare * 5,
+    variance: 0.28 + tensionShare * 0.9,
+    spacing: 15, opacity: 0.3, seed: 31,
+    pointer: true, pointerMode: 'repel', pointerTarget: stage
+  });
+})();
+
+/* ---- 导出图片：DOM 快照 -> SVG foreignObject -> PNG（2x） ---- */
+(function () {
+  var btn = document.getElementById('exportBtn');
+  if (!btn) return;
+  btn.addEventListener('click', function () { exportPNG(btn); });
+
+  async function exportPNG(button) {
+    var originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = '生成中…';
+    try {
+      var main = document.getElementById('cockpit');
+      var EXPORT_WIDTH = 1092;
+
+      /* 1. 克隆驾驶舱并固定为完整三栏导出布局 */
+      var clone = main.cloneNode(true);
+      clone.classList.add('export-root');
+      clone.removeAttribute('id');
+
+      /* 2. Pixel 场域 canvas -> 静态图片（canvas 内容无法随 DOM 序列化） */
+      var liveCanvas = main.querySelector('canvas');
+      var cloneCanvas = clone.querySelector('canvas');
+      if (liveCanvas && cloneCanvas) {
+        var snap = document.createElement('img');
+        snap.alt = '';
+        snap.src = liveCanvas.toDataURL('image/png');
+        cloneCanvas.replaceWith(snap);
+      }
+
+      /* 3. 屏外测量导出布局的真实高度 */
+      var holder = document.createElement('div');
+      holder.style.cssText = 'position:fixed;left:-100000px;top:0;width:' + EXPORT_WIDTH + 'px;pointer-events:none;';
+      document.body.appendChild(holder);
+      holder.appendChild(clone);
+      var height = Math.ceil(clone.getBoundingClientRect().height);
+
+      /* 4. 组装 foreignObject：样式表 + 布局克隆 */
+      var styleClone = document.getElementById('cockpit-style').cloneNode(true);
+      var xhtml = document.createElement('div');
+      xhtml.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+      xhtml.appendChild(styleClone);
+      xhtml.appendChild(clone);
+      var serialized = new XMLSerializer().serializeToString(xhtml);
+      document.body.removeChild(holder);
+
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + EXPORT_WIDTH + '" height="' + height + '">' +
+        '<foreignObject width="100%" height="100%">' + serialized + '</foreignObject></svg>';
+      var url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }));
+      var image = new Image();
+      await new Promise(function (resolve, reject) {
+        image.onload = resolve;
+        image.onerror = function () { reject(new Error('快照渲染失败')); };
+        image.src = url;
+      });
+
+      /* 5. 2x 栅格化并下载 */
+      var scale = 2;
+      var out = document.createElement('canvas');
+      out.width = EXPORT_WIDTH * scale;
+      out.height = height * scale;
+      var ctx = out.getContext('2d');
+      ctx.fillStyle = getComputedStyle(main).backgroundColor || '#ffffff';
+      ctx.fillRect(0, 0, out.width, out.height);
+      ctx.drawImage(image, 0, 0, out.width, out.height);
+      URL.revokeObjectURL(url);
+
+      var link = document.createElement('a');
+      var weekEl = main.querySelector('.head .week');
+      var week = weekEl ? weekEl.textContent.trim() : 'weekly';
+      link.download = '龙虾AI驾驶舱-' + week + '.png';
+      link.href = out.toDataURL('image/png');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      button.textContent = '已导出 ✓';
+      setTimeout(function () { button.textContent = originalText; }, 1600);
+    } catch (err) {
+      alert('导出失败：' + (err && err.message ? err.message : err));
+      button.textContent = originalText;
+    } finally {
+      button.disabled = false;
+    }
+  }
+})();
+</script>
+</body>
+</html>
