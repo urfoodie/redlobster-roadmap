@@ -635,7 +635,8 @@
 
       var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + EXPORT_WIDTH + '" height="' + height + '">' +
         '<foreignObject width="100%" height="100%">' + serialized + '</foreignObject></svg>';
-      var url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }));
+      /* data: URL 保持同源（blob: 在 file:// 下为 opaque origin，会污染画布） */
+      var url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
       var image = new Image();
       await new Promise(function (resolve, reject) {
         image.onload = resolve;
@@ -652,12 +653,11 @@
       ctx.fillStyle = getComputedStyle(main).backgroundColor || '#ffffff';
       ctx.fillRect(0, 0, out.width, out.height);
       ctx.drawImage(image, 0, 0, out.width, out.height);
-      URL.revokeObjectURL(url);
 
       var link = document.createElement('a');
       var weekEl = main.querySelector('.head .week');
       var week = weekEl ? weekEl.textContent.trim() : 'weekly';
-      link.download = '龙虾进展-' + week + '.png';
+      link.download = '龙虾AI驾驶舱-' + week + '.png';
       link.href = out.toDataURL('image/png');
       document.body.appendChild(link);
       link.click();
